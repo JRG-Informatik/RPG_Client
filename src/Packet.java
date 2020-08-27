@@ -42,7 +42,7 @@ public class Packet implements AutoCloseable {
     public void SetBytes(byte[] _data)
     {
         Write(_data);
-        readableBuffer = BitConverter.tobyteArray((Byte[])buffer.toArray());
+        readableBuffer = BitConverter.tobyteArray(buffer.toArray(new Byte[buffer.size()]));
     }
 
     /// <summary>Inserts the length of the packet's content at the start of the buffer.</summary>
@@ -61,7 +61,7 @@ public class Packet implements AutoCloseable {
     /// <summary>Gets the packet's content in array form.</summary>
     public byte[] ToArray()
     {
-        readableBuffer = BitConverter.tobyteArray((Byte[])buffer.toArray());;
+        readableBuffer = BitConverter.tobyteArray(buffer.toArray(new Byte[buffer.size()]));;
         return readableBuffer;
     }
 
@@ -191,7 +191,7 @@ public class Packet implements AutoCloseable {
         if (buffer.size() > readPos)
         {
             // If there are unread bytes
-            byte[] _value = BitConverter.tobyteArray((Byte[])buffer.subList(readPos, _length).toArray()); // Get the bytes at readPos' position with a range of _length
+            byte[] _value = BitConverter.tobyteArray(buffer.subList(readPos, readPos+_length).toArray(new Byte[_length])); // Get the bytes at readPos' position with a range of _length
             if (_moveReadPos)
             {
                 // If _moveReadPos is true
@@ -394,6 +394,21 @@ public class Packet implements AutoCloseable {
 
             disposed = true;
         }
+    }
+    
+    public String toString() {
+    	return bytesToHex(ToArray());
+    }
+    
+    private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
+    private static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for (int j = 0; j < bytes.length; j++) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
+            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 
     public void Dispose()
